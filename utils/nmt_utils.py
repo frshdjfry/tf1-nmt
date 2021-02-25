@@ -21,6 +21,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
+from .mxl_infer import save_as_mxl
 from ..utils import evaluation_utils
 from ..utils import misc_utils as utils
 
@@ -63,7 +64,7 @@ def decode_and_evaluate(name,
 
           batch_size = nmt_outputs.shape[1]
           num_sentences += batch_size
-
+          translations = []
           for sent_id in range(batch_size):
             for beam_id in range(num_translations_per_input):
               translation = get_translation(
@@ -72,6 +73,8 @@ def decode_and_evaluate(name,
                   tgt_eos=tgt_eos,
                   subword_option=subword_option)
               trans_f.write((translation + b"\n").decode("utf-8"))
+              translations.append(translation.decode("utf-8"))
+          save_as_mxl([translation.split() for translation in translations])
         except tf.errors.OutOfRangeError:
           utils.print_time(
               "  done, num sentences %d, num translations per input %d" %
